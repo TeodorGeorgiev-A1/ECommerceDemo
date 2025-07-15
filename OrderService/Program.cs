@@ -4,13 +4,14 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // RUN: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 -- dotnet run"
-        // TO START THIS SERVICE
+        // SIDECAR COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500"
+        
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
 
         builder.Services.AddControllers().AddDapr(); // Add Dapr support
+        builder.Services.AddHttpClient<InventoryClient>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();

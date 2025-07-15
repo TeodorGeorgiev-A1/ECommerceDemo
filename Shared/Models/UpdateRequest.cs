@@ -1,4 +1,4 @@
-﻿namespace InventoryService.Models;
+﻿namespace Shared.Models;
 
 public class UpdateRequest
 {

@@ -27,6 +27,6 @@ public class InventoryController : ControllerBase
             return Ok(new { message = "Stock updated." });
         }
 
-        return BadRequest(new { result.ErrorMessage });
+        return BadRequest(new InventoryResponse() { Error = result.ErrorMessage });
     }
 }
