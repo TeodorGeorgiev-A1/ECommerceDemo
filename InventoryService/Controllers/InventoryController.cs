@@ -29,4 +29,18 @@ public class InventoryController : ControllerBase
 
         return BadRequest(new InventoryResponse() { Error = result.ErrorMessage });
     }
+
+    [HttpPost("stock-check")]
+    public IActionResult CheckStock([FromBody] StockCheckRequest request)
+    {
+        var product = _store.GetById(request.ProductId);
+
+        if (product == null)
+            return NotFound("Product not found");
+
+        if (product.Quantity >= request.Quantity)
+            return Ok(new { Available = true });
+        else
+            return Ok(new { Available = false });
+    }
 }

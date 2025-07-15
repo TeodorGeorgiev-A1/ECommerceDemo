@@ -4,14 +4,19 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // SIDECAR COMMAND: "dapr run --app-id inventoryservice --app-port 12101 --dapr-http-port 3501"
+        // SIDECAR COMMAND: "dapr run --app-id inventoryservice --app-port 12101 --dapr-http-port 3501 --dapr-grpc-port 50001"
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
 
         builder.Services.AddSingleton<InventoryStore>();
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            })
+            .AddDapr();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 

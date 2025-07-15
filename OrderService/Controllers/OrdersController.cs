@@ -1,32 +1,39 @@
-﻿namespace OrderService.Controllers;
+﻿using Dapr.Client;
+
+namespace OrderService.Controllers;
 
 [Route("orders")]
 [ApiController]
 public class OrdersController : ControllerBase
 {
     private readonly InventoryClient _inventoryClient;
+    private readonly DaprClient _daprClient;
     private readonly ILogger<OrdersController> _logger;
 
-    public OrdersController(InventoryClient inventoryClient, ILogger<OrdersController> logger)
+    public OrdersController(InventoryClient inventoryClient, ILogger<OrdersController> logger, DaprClient daprClient)
     {
         _inventoryClient = inventoryClient;
         _logger = logger;
+        _daprClient = daprClient;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] OrderDto order)
     {
-        // Try to reserve stock in inventory
-        var inventoryResult = await _inventoryClient.UpdateStockAsync(order.ProductId, -order.Quantity);
+        // 1. Check inventory via service invocation
+        var stockCheckResult = await _inventoryClient.CheckStock(order.ProductId, order.Quantity);
+        if (!stockCheckResult)
+            return BadRequest("Insufficient stock");
 
-        if (!string.IsNullOrEmpty(inventoryResult.Error))
+        // 2. Publish order-created event
+        var orderEvent = new
         {
-            return BadRequest(inventoryResult.Error);
-        }
+            Id = Guid.NewGuid().ToString(),
+            order.ProductId,
+            order.Quantity
+        };
 
-        // Process order normally
-        _logger.LogInformation($"Order accepted for product with Id: {order.ProductId}, quantity: {order.Quantity}");
-
-        return Ok(new { status = "Order received", order });
+        await _daprClient.PublishEventAsync("pubsub", "order-created", orderEvent);
+        return Ok(orderEvent);
     }
 }

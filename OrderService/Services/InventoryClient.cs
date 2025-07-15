@@ -24,6 +24,7 @@ public class InventoryClient
         // Dapr service invocation URL:
         var url = _configuration.GetValue<string>("InventoryDaprURL") ??
                   throw new Exception("Configuration value not found.");
+        url += "/update";
 
         var response = await _httpClient.PostAsJsonAsync(url, request);
 
@@ -39,5 +40,29 @@ public class InventoryClient
             var error = await response.Content.ReadFromJsonAsync<InventoryResponse>(options);
             return error ?? new InventoryResponse { Error = "Unknown error" };
         }
+    }
+
+    public async Task<bool> CheckStock(string productId, int quantity)
+    {
+        var request = new StockCheckRequest
+        {
+            ProductId = productId,
+            Quantity = quantity
+        };
+
+        // Dapr service invocation URL:
+        var url = _configuration.GetValue<string>("InventoryDaprURL") ??
+                  throw new Exception("Configuration value not found.");
+        url += "/stock-check";
+
+        var options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+
+        var response = await _httpClient.PostAsJsonAsync(url, request);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<InventoryCheckResponse>(options);
+            return result?.Available ?? false;
+        }
+        return false; // If the request fails, assume stock is not available
     }
 }

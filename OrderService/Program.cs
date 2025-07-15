@@ -10,6 +10,10 @@ public class Program
 
         // Add services to the container.
 
+        builder.Services.AddDaprClient(builder =>
+        {
+            builder.UseGrpcEndpoint("http://localhost:50001");
+        });
         builder.Services.AddControllers().AddDapr(); // Add Dapr support
         builder.Services.AddHttpClient<InventoryClient>();
 
