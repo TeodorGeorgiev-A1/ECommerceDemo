@@ -4,7 +4,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // SIDECAR COMMAND: "dapr run --app-id billingservice --app-port 12102 --dapr-http-port 3502 --dapr-grpc-port 50002"
+        // RUN COMMAND: "dapr run --app-id billingservice --app-port 12102 --dapr-http-port 3502 --dapr-grpc-port 50002 --components-path ./components"
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -15,7 +15,10 @@ public class Program
                 options.SuppressModelStateInvalidFilter = true;
             })
             .AddDapr();
-        builder.Services.AddDaprClient();
+        builder.Services.AddDaprClient(builder =>
+        {
+            builder.UseGrpcEndpoint("http://localhost:50002");
+        });
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 

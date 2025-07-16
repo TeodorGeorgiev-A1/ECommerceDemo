@@ -4,7 +4,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // SIDECAR COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 --dapr-grpc-port 50000"
+        // RUN COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 --dapr-grpc-port 50000 --components-path ./components"
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +14,12 @@ public class Program
         {
             builder.UseGrpcEndpoint("http://localhost:50000");
         });
-        builder.Services.AddControllers().AddDapr(); // Add Dapr support
+        builder.Services.AddControllers()
+            .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true;
+                })
+            .AddDapr(); // Add Dapr support
         builder.Services.AddHttpClient<InventoryClient>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -31,8 +36,10 @@ public class Program
         app.UseAuthorization();
 
 
+        app.UseRouting();
+        app.UseCloudEvents();
         app.MapControllers();
-        app.MapSubscribeHandler(); // Enables pub/sub handling
+        app.MapSubscribeHandler();
 
         app.Run();
     }
