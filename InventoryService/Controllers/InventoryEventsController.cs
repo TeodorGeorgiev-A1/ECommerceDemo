@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace InventoryService.Controllers;
+﻿namespace InventoryService.Controllers;
 
 [ApiController]
 public class InventoryEventsController : ControllerBase
@@ -15,12 +13,10 @@ public class InventoryEventsController : ControllerBase
         _logger = logger;
     }
 
+    [Topic("pubsub", "order-created")]
     [HttpPost("order-created")]
-    public IActionResult HandleOrderCreated([FromBody] JsonElement message)
+    public IActionResult HandleOrderCreated([FromBody] OrderDto order)
     {
-        var orderJson = message.GetProperty("data").GetRawText();
-        var order = JsonSerializer.Deserialize<OrderDto>(orderJson, options);
-
         if (order is null)
         {
             _logger.LogWarning("Received invalid order-created event: Empty order.");
@@ -36,21 +32,20 @@ public class InventoryEventsController : ControllerBase
         var product = _store.GetById(order.ProductId);
 
         if (product == null)
-            return NotFound();
+        {
+            _logger.LogWarning($"Product {order.ProductId}");
+            return Ok(); // Still acknowledge to avoid infinite retries
+        }
 
         if (product.Quantity < order.Quantity)
-            return BadRequest("Inventory underflow");
+        {
+            _logger.LogWarning("Inventory underflow");
+            return Ok(); // Still acknowledge to avoid infinite retries
+        }
 
         product.Quantity -= order.Quantity;
 
+        _logger.LogInformation($"Order processed: {order.ProductId} - {order.Quantity} units. Remaining stock: {product.Quantity}");
         return Ok();
-    }
-
-    [HttpGet("dapr/subscribe")]
-    public IActionResult GetSubscriptions()
-    {
-        return Ok(new[] {
-            new { pubsubname = "pubsub", topic = "order-created", route = "order-created" }
-        });
     }
 }

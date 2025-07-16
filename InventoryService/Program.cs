@@ -17,6 +17,7 @@ public class Program
                 options.SuppressModelStateInvalidFilter = true;
             })
             .AddDapr();
+        builder.Services.AddDaprClient();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
@@ -30,8 +31,10 @@ public class Program
 
         app.UseAuthorization();
 
-
+        app.UseRouting();
+        app.UseCloudEvents();
         app.MapControllers();
+        app.MapSubscribeHandler();
 
         app.Run();
     }

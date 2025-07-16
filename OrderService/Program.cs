@@ -4,15 +4,15 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // SIDECAR COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500"
-        
+        // SIDECAR COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 --dapr-grpc-port 50000"
+
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
 
         builder.Services.AddDaprClient(builder =>
         {
-            builder.UseGrpcEndpoint("http://localhost:50001");
+            builder.UseGrpcEndpoint("http://localhost:50000");
         });
         builder.Services.AddControllers().AddDapr(); // Add Dapr support
         builder.Services.AddHttpClient<InventoryClient>();
