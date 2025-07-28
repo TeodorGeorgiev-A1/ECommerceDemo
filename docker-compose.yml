@@ -1,0 +1,109 @@
+version: '3.4'
+
+services:
+  redis:
+    image: redis
+    ports:
+      - "16379:6379"
+    networks:
+      - dapr-network
+
+  orderservice:
+    image: ${DOCKER_REGISTRY-}orderservice
+    build:
+      context: .
+      dockerfile: OrderService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "14100:80"
+    networks:
+      - dapr-network
+    depends_on:
+      - redis
+
+  orderservice-dapr:
+    image: "daprio/daprd:latest"
+    command: [
+      "./daprd",
+      "-app-id", "orderservice",
+      "-app-port", "80",
+      "-dapr-http-port", "3500",
+      "-dapr-grpc-port", "50000",
+      "-config", "/dapr/config.yaml",
+      "-components-path", "/dapr/components"
+    ]
+    depends_on:
+      - orderservice
+    networks:
+      - dapr-network  # Shares network namespace with app
+    volumes:
+      - ./.dapr:/dapr
+
+  billingservice:
+    image: ${DOCKER_REGISTRY-}billingservice
+    build:
+      context: .
+      dockerfile: BillingService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "14102:80"
+    networks:
+      - dapr-network
+    depends_on:
+      - redis
+
+  billingservice-dapr:
+    image: "daprio/daprd:latest"
+    command: [
+      "./daprd",
+      "-app-id", "billingservice",
+      "-app-port", "80",
+      "-dapr-http-port", "3502",
+      "-dapr-grpc-port", "50002",
+      "-config", "/dapr/config.yaml",
+      "-components-path", "/dapr/components"
+    ]
+    depends_on:
+      - billingservice
+    network_mode: "service:billingservice"
+    volumes:
+      - ./.dapr:/dapr
+
+  inventoryservice:
+    image: ${DOCKER_REGISTRY-}inventoryservice
+    build:
+      context: .
+      dockerfile: InventoryService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "14101:80"
+    networks:
+      - dapr-network
+    depends_on:
+      - redis
+
+  inventoryservice-dapr:
+    image: "daprio/daprd:latest"
+    command: [
+      "./daprd",
+      "-app-id", "inventoryservice",
+      "-app-port", "80",
+      "-dapr-http-port", "3501",
+      "-dapr-grpc-port", "50001",
+      "-config", "/dapr/config.yaml",
+      "-components-path", "/dapr/components"
+    ]
+    depends_on:
+      - inventoryservice
+    network_mode: "service:inventoryservice"
+    volumes:
+      - ./.dapr:/dapr
+
+networks:
+  dapr-network:
