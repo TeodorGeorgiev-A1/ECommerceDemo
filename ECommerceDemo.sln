@@ -33,6 +33,9 @@ Global
 		{1D648C3A-E68F-450E-9E56-221A5B6C1C46}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D648C3A-E68F-450E-9E56-221A5B6C1C46}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D648C3A-E68F-450E-9E56-221A5B6C1C46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Debug|Any CPU.ActiveCfg = Debug
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Release|Any CPU.ActiveCfg = Release
+		{D1786E2B-CAA0-4B2D-A974-9845EB9E420F}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

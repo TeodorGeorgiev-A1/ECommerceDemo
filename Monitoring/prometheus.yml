@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'dapr-sidecars'
+    static_configs:
+      - targets:
+          - 'localhost:9090'   # Replace with each Dapr sidecar's metrics port (default: 9090, 9091, etc.)
+          - 'localhost:9091'
+          - 'localhost:9092'

@@ -4,7 +4,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // RUN COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 --dapr-grpc-port 50000 --components-path ./components"
+        // RUN COMMAND: "dapr run --app-id orderservice --app-port 12100 --dapr-http-port 3500 --dapr-grpc-port 50000"
 
         var builder = WebApplication.CreateBuilder(args);
 
